@@ -1,9 +1,15 @@
 # Hyperspell Desktop Client
 
-The Hyperspell menu-bar app for macOS. It keeps your company brain in sync on
-your machine and makes it queryable from local AI tools (Claude Code, Codex,
-Cursor, Claude Desktop) — with an **explicit consent screen** for everything it
-touches, and a signed, notarized installer instead of `curl | bash`.
+A **trusted installer** for the Hyperspell command-line tools on macOS. Its job
+is to deliver the full `hyperspell` (sync daemon) and `hyperbrain` (company-brain
+query) CLIs onto your machine through a signed, notarized path instead of
+`curl | bash` — with an **explicit consent screen** for everything they touch.
+
+After it runs, **everything the CLIs can do is available from any terminal**
+(and to your agents): `hyperspell sync/search/status/…` and `hyperbrain
+ask/search/remember/memories/connections/…`. The app does **not** reimplement
+those commands as buttons — it installs the real CLIs and keeps them on PATH,
+running, and updated. The GUI is the install + consent + status surface.
 
 This repo is intentionally **public and inspectable**: you can audit exactly what
 the software running on your machine does. That auditability is the point.

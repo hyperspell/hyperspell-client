@@ -49,13 +49,19 @@ pub fn start_login(app: AppHandle, app_slug: String, name: String) -> Result<(),
 
 #[tauri::command]
 pub fn start_daemon(app: AppHandle, supervisor: State<'_, Supervisor>) -> Result<(), String> {
-    // If the app ships a bundled runtime, materialize ~/.hyperspell/venv from it
-    // before supervising. In `tauri dev` (no bundled runtime) this is skipped and
+    // If the app ships a bundled runtime, do the trusted install before
+    // supervising: build ~/.hyperspell/venv (the daemon), install the full
+    // hyperbrain CLI, and expose both (+ uv) on PATH so every CLI ability works
+    // from any terminal. In `tauri dev` (no bundled runtime) this is skipped and
     // the supervisor falls back to a daemon on PATH / in an existing venv.
     if let Ok(resource_dir) = app.path().resource_dir() {
         let rt = bootstrap::runtime_from_resources(&resource_dir);
         if bootstrap::is_bundled(&rt) {
-            bootstrap::ensure_venv(&rt)?;
+            let daemon = bootstrap::ensure_venv(&rt)?;
+            bootstrap::expose_cli(&rt, &daemon)?;
+            // Best-effort: needs PyPI on first run; the daemon also installs it
+            // on its first sync, so a transient failure here isn't fatal.
+            let _ = bootstrap::install_hyperbrain(&rt);
         }
     }
     supervisor.start()
