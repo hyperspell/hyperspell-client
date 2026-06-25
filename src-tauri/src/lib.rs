@@ -10,6 +10,7 @@
 
 mod actions_log;
 mod auth;
+mod bootstrap;
 mod daemon_paths;
 mod ipc;
 mod permissions;

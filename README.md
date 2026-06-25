@@ -39,17 +39,19 @@ the daemon already uses for the `hyperbrain` CLI.
 
 ## Bundling (Option A)
 
-The app ships a relocatable CPython + the daemon wheel, but builds/keeps the
-venv at `~/.hyperspell/venv` — **outside** the signed `.app` bundle. This is
-deliberate: the daemon's existing SHA256-verified wheel self-update (`uv pip
-install` into that venv) keeps working without invalidating the app's code
-signature. See `src-tauri/entitlements.plist` for the hardened-runtime
-entitlements the embedded interpreter needs.
+The app bundles a relocatable CPython, `uv`, and the daemon wheel (fetched by
+`scripts/fetch-runtime.sh` into `src-tauri/resources/runtime/`). On first run,
+`bootstrap.rs` builds the venv at `~/.hyperspell/venv` — **outside** the signed
+`.app` bundle. This is deliberate: the daemon's existing SHA256-verified wheel
+self-update (`uv pip install` into that venv) keeps working without invalidating
+the app's code signature. See `src-tauri/entitlements.plist` for the
+hardened-runtime entitlements the embedded interpreter needs.
 
-> **Status:** scaffold. The Rust modules are stubs that map to the design above;
-> `daemon_paths::daemon_bin()` currently resolves `hyperspell` on `PATH` (dev
-> install) rather than the bundled interpreter. Signing/notarization and the
-> bundled-interpreter wiring are not done yet.
+> **Status:** the menu-bar shell, daemon supervision (respawn-on-upgrade), the
+> consent model wiring, and the bundling logic all compile and the structure is
+> in place. Not yet done: actually running `fetch-runtime.sh` + a signed
+> `tauri build` end-to-end (needs the Apple creds), a universal (fat) runtime,
+> and a "setting up…" progress UI for the first-run venv build.
 
 ## Develop
 
@@ -58,9 +60,13 @@ Prerequisites: **Rust** (`rustup`), **Node 20+**, and the
 
 ```bash
 npm install
-npm run tauri dev      # run the app
-npm run tauri build    # build a (currently unsigned) .app + .dmg
+npm run tauri dev          # run the app (no bundled runtime; uses a daemon on PATH)
+./scripts/fetch-runtime.sh # fetch CPython + uv + the daemon wheel for bundling
+npm run tauri build        # build a (currently unsigned) .app + .dmg
 ```
+
+In `tauri dev` there's no bundled runtime, so the app drives a `hyperspell`
+daemon already installed on `PATH` or at `~/.hyperspell/venv/bin/hyperspell`.
 
 The updater public key in `src-tauri/tauri.conf.json` is a placeholder —
 generate a real keypair with `npm run tauri signer generate` before shipping

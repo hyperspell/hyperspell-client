@@ -28,6 +28,9 @@ jobs:
       - name: Install frontend deps
         run: npm ci
 
+      - name: Fetch bundled runtime (CPython + uv + daemon wheel)
+        run: ./scripts/fetch-runtime.sh
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,4 +50,9 @@ jobs:
           releaseName: "Hyperspell ${{ github.ref_name }}"
           releaseDraft: true
           prerelease: false
-          args: --target universal-apple-darwin
+          # Builds for the runner's arch (arm64 on macos-14), matching the
+          # per-arch runtime fetched above.
+          # TODO(universal): a universal app needs both arch runtimes fetched and
+          # merged (lipo) — do that via a build matrix or a fat-runtime step
+          # before re-enabling `--target universal-apple-darwin`.
+          args: ""

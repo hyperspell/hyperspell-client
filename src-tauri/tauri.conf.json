@@ -35,6 +35,9 @@
     "active": true,
     "targets": ["app", "dmg"],
     "category": "Productivity",
+    "resources": {
+      "resources/runtime": "runtime"
+    },
     "shortDescription": "Keeps your company brain in sync and queryable from local AI tools.",
     "createUpdaterArtifacts": true,
     "icon": [

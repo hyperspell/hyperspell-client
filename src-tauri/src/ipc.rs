@@ -2,9 +2,9 @@
 
 use crate::permissions::Permissions;
 use crate::supervisor::Supervisor;
-use crate::{actions_log, auth, daemon_paths, permissions};
+use crate::{actions_log, auth, bootstrap, daemon_paths, permissions};
 use serde::Serialize;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 
 #[derive(Serialize)]
 pub struct Status {
@@ -48,6 +48,15 @@ pub fn start_login(app: AppHandle, app_slug: String, name: String) -> Result<(),
 }
 
 #[tauri::command]
-pub fn start_daemon(supervisor: State<'_, Supervisor>) -> Result<(), String> {
+pub fn start_daemon(app: AppHandle, supervisor: State<'_, Supervisor>) -> Result<(), String> {
+    // If the app ships a bundled runtime, materialize ~/.hyperspell/venv from it
+    // before supervising. In `tauri dev` (no bundled runtime) this is skipped and
+    // the supervisor falls back to a daemon on PATH / in an existing venv.
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let rt = bootstrap::runtime_from_resources(&resource_dir);
+        if bootstrap::is_bundled(&rt) {
+            bootstrap::ensure_venv(&rt)?;
+        }
+    }
     supervisor.start()
 }

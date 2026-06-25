@@ -1,0 +1,3 @@
+The bundled runtime (relocatable CPython, uv, the daemon wheel) is fetched here
+by scripts/fetch-runtime.sh at build time and is gitignored. This .gitkeep keeps
+the directory present so Tauri's `resources` mapping resolves even before a fetch.

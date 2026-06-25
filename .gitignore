@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Bundled runtime fetched by scripts/fetch-runtime.sh (not committed)
+src-tauri/resources/runtime/*
+!src-tauri/resources/runtime/.gitkeep
