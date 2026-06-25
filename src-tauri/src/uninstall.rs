@@ -43,3 +43,28 @@ fn strip_marker_lines(path: &Path, marker: &str) {
     let kept: Vec<&str> = text.lines().filter(|l| !l.contains(marker)).collect();
     let _ = std::fs::write(path, format!("{}\n", kept.join("\n")));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn strip_removes_only_marked_lines() {
+        let dir = std::env::temp_dir().join(format!("hs-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let rc = dir.join("rc");
+        std::fs::write(
+            &rc,
+            "export A=1\nexport PATH=\"$HOME/.local/bin:$PATH\"  # hyperspell\nexport B=2\n",
+        )
+        .unwrap();
+
+        strip_marker_lines(&rc, "# hyperspell");
+
+        let out = std::fs::read_to_string(&rc).unwrap();
+        assert!(out.contains("export A=1"));
+        assert!(out.contains("export B=2"));
+        assert!(!out.contains("# hyperspell"));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}

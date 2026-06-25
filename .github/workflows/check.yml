@@ -1,0 +1,43 @@
+name: Check
+
+# Fast PR gate: lint + type-check + build both halves (Rust shell + web UI).
+# The heavy signed build lives in release.yml (tag-triggered).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Type-check + build frontend
+        run: npm run build
+
+  rust:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # tauri's build script reads the frontend dist; provide it so the Rust
+      # crate compiles without running the full app build.
+      - run: npm ci && npm run build
+      - name: rustfmt
+        working-directory: src-tauri
+        run: cargo fmt --all --check
+      - name: clippy
+        working-directory: src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+      - name: test
+        working-directory: src-tauri
+        run: cargo test

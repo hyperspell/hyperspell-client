@@ -12,7 +12,36 @@ pub fn read_table() -> toml::Table {
 
 /// Whether the daemon is authenticated (device token or API key present).
 pub fn logged_in() -> bool {
-    let t = read_table();
-    let nonempty = |k: &str| t.get(k).and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty());
+    logged_in_from(&read_table())
+}
+
+/// Pure form for testing.
+fn logged_in_from(t: &toml::Table) -> bool {
+    let nonempty = |k: &str| {
+        t.get(k)
+            .and_then(|v| v.as_str())
+            .is_some_and(|s| !s.is_empty())
+    };
     nonempty("token") || nonempty("api_key")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_config_is_not_logged_in() {
+        assert!(!logged_in_from(&toml::Table::new()));
+    }
+
+    #[test]
+    fn token_or_api_key_means_logged_in() {
+        assert!(logged_in_from(&"token = \"abc\"".parse().unwrap()));
+        assert!(logged_in_from(&"api_key = \"hs2-x\"".parse().unwrap()));
+    }
+
+    #[test]
+    fn empty_string_token_is_not_logged_in() {
+        assert!(!logged_in_from(&"token = \"\"".parse().unwrap()));
+    }
 }

@@ -2,13 +2,10 @@
 //! app is the *sole* supervisor: `--supervised` makes the daemon tear down any
 //! legacy launchd/systemd/cron auto-start on startup so the two don't fight.
 //!
-//! A single monitor thread owns the supervision loop and replicates what launchd
-//! did:
-//!   - exit 0  → the daemon self-upgraded its wheel and `sys.exit(0)`d expecting
-//!               a respawn on the new code. Respawn immediately.
-//!   - nonzero → a crash. Back off (mirrors launchd's ThrottleInterval=30s) then
-//!               respawn.
-//!   - stop()  → user quit the app: don't respawn (quitting = stop syncing).
+//! A single monitor thread owns the supervision loop and replicates launchd:
+//! - exit 0 → the daemon self-upgraded its wheel (`sys.exit(0)`); respawn now.
+//! - nonzero → a crash; back off (launchd's ThrottleInterval=30s) then respawn.
+//! - stop() → user quit the app; don't respawn (quitting = stop syncing).
 
 use crate::daemon_paths::daemon_bin;
 use std::process::{Child, Command};

@@ -46,7 +46,7 @@ pub fn run() {
         .setup(|app| {
             // Menu-bar app: live in the tray, not the dock.
             #[cfg(target_os = "macos")]
-            let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             // Start at login so the company brain keeps syncing without the user
             // having to relaunch. Best-effort.

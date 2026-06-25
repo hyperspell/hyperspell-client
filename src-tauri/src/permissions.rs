@@ -27,7 +27,12 @@ pub struct Permissions {
 }
 
 pub fn load() -> Permissions {
-    let t = read_table();
+    from_table(&read_table())
+}
+
+/// Resolve permissions from a config table — default-deny (an unset or
+/// non-boolean key reads as `false`). Pure, so it's unit-testable.
+pub fn from_table(t: &toml::Table) -> Permissions {
     let g = |k: &str| t.get(k).and_then(|v| v.as_bool()).unwrap_or(false);
     Permissions {
         claude_code: g("perm_claude_code"),
@@ -59,4 +64,32 @@ pub fn set(key: &str, value: bool) -> Result<(), String> {
         let _ = std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_config_denies_everything() {
+        let p = from_table(&toml::Table::new());
+        assert!(!p.claude_code && !p.codex && !p.cursor);
+        assert!(!p.claude_desktop && !p.visible_mirror);
+    }
+
+    #[test]
+    fn only_set_keys_are_granted() {
+        let t: toml::Table = "perm_claude_code = true\nperm_cursor = true\n"
+            .parse()
+            .unwrap();
+        let p = from_table(&t);
+        assert!(p.claude_code && p.cursor);
+        assert!(!p.codex && !p.claude_desktop && !p.visible_mirror);
+    }
+
+    #[test]
+    fn non_boolean_value_reads_as_denied() {
+        let t: toml::Table = "perm_codex = \"yes\"\n".parse().unwrap();
+        assert!(!from_table(&t).codex);
+    }
 }
