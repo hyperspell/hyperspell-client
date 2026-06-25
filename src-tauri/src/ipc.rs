@@ -2,12 +2,15 @@
 
 use crate::permissions::Permissions;
 use crate::supervisor::Supervisor;
-use crate::{actions_log, auth, permissions};
+use crate::{actions_log, auth, daemon_paths, permissions};
 use serde::Serialize;
 use tauri::{AppHandle, State};
 
 #[derive(Serialize)]
 pub struct Status {
+    /// A daemon binary the app can drive is present on this machine.
+    pub daemon_installed: bool,
+    /// The daemon process is currently running under our supervisor.
     pub daemon_running: bool,
     pub permissions: Permissions,
 }
@@ -15,6 +18,7 @@ pub struct Status {
 #[tauri::command]
 pub fn get_status(supervisor: State<'_, Supervisor>) -> Status {
     Status {
+        daemon_installed: daemon_paths::daemon_installed(),
         daemon_running: supervisor.is_running(),
         permissions: permissions::load(),
     }

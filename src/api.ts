@@ -11,6 +11,7 @@ export interface Permissions {
 }
 
 export interface Status {
+  daemon_installed: boolean;
   daemon_running: boolean;
   permissions: Permissions;
 }
