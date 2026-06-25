@@ -66,6 +66,36 @@ The updater public key in `src-tauri/tauri.conf.json` is a placeholder —
 generate a real keypair with `npm run tauri signer generate` before shipping
 updates.
 
+## Releasing (signed + notarized)
+
+`.github/workflows/release.yml` builds, signs, notarizes, and publishes a draft
+GitHub Release (signed `.dmg` + Tauri updater artifacts) on a `v*` tag. It needs
+these repo secrets:
+
+**Apple Developer ID signing + notarization** (requires an Apple Developer
+Program membership):
+
+| Secret | What it is |
+|---|---|
+| `APPLE_CERTIFICATE` | Base64 of the Developer ID Application cert (.p12) |
+| `APPLE_CERTIFICATE_PASSWORD` | Password for that .p12 |
+| `APPLE_SIGNING_IDENTITY` | e.g. `Developer ID Application: Hyperspell (TEAMID)` |
+| `APPLE_ID` | Apple ID email used for notarization |
+| `APPLE_PASSWORD` | App-specific password for that Apple ID |
+| `APPLE_TEAM_ID` | 10-char Apple Team ID |
+
+**App-shell updater signing** (independent of Apple — signs the auto-update
+payload). Generate once with `npm run tauri signer generate`:
+
+| Secret | What it is |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY` | The generated private key |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Its password |
+
+Put the matching **public** key in `src-tauri/tauri.conf.json`
+(`plugins.updater.pubkey`) — it's a placeholder today. Host the updater's
+`latest.json` at the endpoint configured there.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
