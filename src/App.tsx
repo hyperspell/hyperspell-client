@@ -7,6 +7,7 @@ import {
   openLoginUrl,
   recentActions,
   setPermission,
+  startDaemon,
   startLogin,
   uninstall,
   type LoginEvent,
@@ -87,6 +88,16 @@ function App() {
     }
   }
 
+  async function onStart() {
+    setError("");
+    try {
+      await startDaemon();
+      refresh();
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
   const loggedIn = status?.logged_in ?? false;
 
   return (
@@ -133,13 +144,22 @@ function App() {
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
           />
-          <button onClick={onLogin}>Log in</button>
+          <button onClick={onLogin} disabled={!appSlug.trim() || !name.trim()}>
+            Log in
+          </button>
           {login?.event === "pending" && (
             <p className="muted">
               Opened your browser — approve code <b>{login.device_code}</b> there.
             </p>
           )}
           {login?.event === "error" && <p className="error">{login.reason}</p>}
+        </section>
+      )}
+
+      {loggedIn && !status?.daemon_running && !setupStage && (
+        <section className="card">
+          <p className="muted">Sync isn't running.</p>
+          <button onClick={onStart}>Start sync</button>
         </section>
       )}
 
@@ -158,6 +178,7 @@ function App() {
                   <input
                     type="checkbox"
                     checked={on}
+                    disabled={!loggedIn}
                     onChange={() => toggle(it.key, it.permKey)}
                   />
                   <span>
