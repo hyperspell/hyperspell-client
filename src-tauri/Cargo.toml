@@ -26,6 +26,9 @@ tauri-plugin-opener = "2"
 tauri-plugin-shell = "2"
 # App-shell self-update channel (separate from the daemon's Python wheel updates).
 tauri-plugin-updater = "2"
+# Start the menu-bar app at login (a LaunchAgent for the APP, not the daemon —
+# the app then supervises the daemon).
+tauri-plugin-autostart = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Read/write the daemon's ~/.hyperspell/config.toml (perm_* consent keys).

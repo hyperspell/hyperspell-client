@@ -3,6 +3,7 @@ import {
   INTEGRATIONS,
   getStatus,
   onLoginEvent,
+  onSetupEvent,
   setPermission,
   startLogin,
   type LoginEvent,
@@ -14,6 +15,7 @@ import "./App.css";
 function App() {
   const [status, setStatus] = useState<Status | null>(null);
   const [login, setLogin] = useState<LoginEvent | null>(null);
+  const [setupStage, setSetupStage] = useState("");
   const [appSlug, setAppSlug] = useState("");
   const [name, setName] = useState("");
 
@@ -27,12 +29,17 @@ function App() {
 
   useEffect(() => {
     refresh();
-    const unlisten = onLoginEvent((e) => {
+    const unLogin = onLoginEvent((e) => {
       setLogin(e);
       if (e.event === "approved") refresh();
     });
+    const unSetup = onSetupEvent((stage) => {
+      setSetupStage(stage);
+      if (stage === "") refresh();
+    });
     return () => {
-      unlisten.then((fn) => fn());
+      unLogin.then((fn) => fn());
+      unSetup.then((fn) => fn());
     };
   }, []);
 
@@ -57,6 +64,12 @@ function App() {
           {status?.daemon_running ? "Syncing" : "Idle"}
         </span>
       </header>
+
+      {setupStage && (
+        <div className="setup" role="status">
+          <span className="spinner" /> {setupStage}
+        </div>
+      )}
 
       {!loggedIn && (
         <section className="card">

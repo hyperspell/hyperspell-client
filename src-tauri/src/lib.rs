@@ -27,6 +27,10 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .manage(Supervisor::default())
         .invoke_handler(tauri::generate_handler![
             ipc::get_status,
@@ -40,6 +44,13 @@ pub fn run() {
             // Menu-bar app: live in the tray, not the dock.
             #[cfg(target_os = "macos")]
             let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            // Start at login so the company brain keeps syncing without the user
+            // having to relaunch. Best-effort.
+            {
+                use tauri_plugin_autostart::ManagerExt;
+                let _ = app.autolaunch().enable();
+            }
 
             // Tray menu: Open + Quit.
             let open_i = MenuItem::with_id(app, "open", "Open Hyperspell", true, None::<&str>)?;

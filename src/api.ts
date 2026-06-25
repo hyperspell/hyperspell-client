@@ -77,3 +77,8 @@ export interface LoginEvent {
 
 export const onLoginEvent = (cb: (e: LoginEvent) => void): Promise<UnlistenFn> =>
   listen<LoginEvent>("login-event", (e) => cb(e.payload));
+
+// First-run "setting up…" stage strings emitted during the bundled install.
+// Empty string means setup finished.
+export const onSetupEvent = (cb: (stage: string) => void): Promise<UnlistenFn> =>
+  listen<string>("setup", (e) => cb(e.payload));

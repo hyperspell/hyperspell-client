@@ -3,6 +3,10 @@ name: Release
 # Build, sign, notarize, and publish the macOS desktop app on a version tag.
 # Push a tag like `v0.1.0` (or run manually) to cut a draft GitHub Release with
 # the signed .dmg + the Tauri updater artifacts (latest.json + signature).
+#
+# Matrix over both macOS arches: the bundled runtime (CPython + uv) is per-arch,
+# so we build an Apple-silicon and an Intel app separately and publish both to the
+# same release. tauri-action merges the per-target updater entries.
 on:
   push:
     tags: ["v*"]
@@ -12,7 +16,15 @@ jobs:
   release:
     permissions:
       contents: write
-    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14 # Apple silicon
+            rust_target: aarch64-apple-darwin
+          - runner: macos-13 # Intel
+            rust_target: x86_64-apple-darwin
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -22,14 +34,13 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          # Universal binary needs both arches.
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: ${{ matrix.rust_target }}
 
       - name: Install frontend deps
         run: npm ci
 
       - name: Fetch bundled runtime (CPython + uv + daemon wheel)
-        run: ./scripts/fetch-runtime.sh
+        run: ./scripts/fetch-runtime.sh # fetches the runner's arch
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -50,9 +61,4 @@ jobs:
           releaseName: "Hyperspell ${{ github.ref_name }}"
           releaseDraft: true
           prerelease: false
-          # Builds for the runner's arch (arm64 on macos-14), matching the
-          # per-arch runtime fetched above.
-          # TODO(universal): a universal app needs both arch runtimes fetched and
-          # merged (lipo) — do that via a build matrix or a fat-runtime step
-          # before re-enabling `--target universal-apple-darwin`.
-          args: ""
+          args: --target ${{ matrix.rust_target }}
