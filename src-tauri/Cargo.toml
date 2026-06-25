@@ -1,0 +1,35 @@
+[package]
+name = "hyperspell-client"
+version = "0.1.0"
+description = "Hyperspell desktop client — keeps your company brain in sync and queryable from local AI tools"
+authors = ["Hyperspell"]
+license = "MIT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "hyperspell_client_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `tray-icon` powers the menu-bar presence; the app lives in the tray, not the dock.
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+# Spawns + supervises the bundled `hyperspell` daemon and drives `login --json`.
+tauri-plugin-shell = "2"
+# App-shell self-update channel (separate from the daemon's Python wheel updates).
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Read/write the daemon's ~/.hyperspell/config.toml (perm_* consent keys).
+toml = "0.8"
+# Resolve the user's home dir for ~/.hyperspell paths.
+dirs = "5"
+
