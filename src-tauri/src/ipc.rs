@@ -10,6 +10,8 @@ use tauri::{AppHandle, Emitter, Manager, State};
 pub struct Status {
     /// The daemon is authenticated (device token or API key present).
     pub logged_in: bool,
+    /// Who's logged in (email / user key), if known.
+    pub identity: Option<String>,
     /// A daemon binary the app can drive is present on this machine.
     pub daemon_installed: bool,
     /// The daemon process is currently running under our supervisor.
@@ -21,6 +23,7 @@ pub struct Status {
 pub fn get_status(supervisor: State<'_, Supervisor>) -> Status {
     Status {
         logged_in: config::logged_in(),
+        identity: config::identity(),
         daemon_installed: daemon_paths::daemon_installed(),
         daemon_running: supervisor.is_running(),
         permissions: permissions::load(),

@@ -92,7 +92,12 @@ function App() {
   return (
     <main className="app">
       <header className="app__header">
-        <h1>Hyperspell</h1>
+        <div>
+          <h1>Hyperspell</h1>
+          {loggedIn && status?.identity && (
+            <span className="who">{status.identity}</span>
+          )}
+        </div>
         <span className={`dot ${status?.daemon_running ? "dot--on" : "dot--off"}`}>
           {status?.daemon_running ? "Syncing" : "Idle"}
         </span>

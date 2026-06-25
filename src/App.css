@@ -28,6 +28,11 @@ body {
   margin: 0;
 }
 
+.who {
+  font-size: 11px;
+  color: #999;
+}
+
 .dot {
   font-size: 12px;
   padding: 2px 8px;

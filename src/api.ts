@@ -17,6 +17,7 @@ export interface Permissions {
 
 export interface Status {
   logged_in: boolean;
+  identity: string | null;
   daemon_installed: boolean;
   daemon_running: boolean;
   permissions: Permissions;

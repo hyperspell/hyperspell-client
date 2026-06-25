@@ -25,6 +25,23 @@ fn logged_in_from(t: &toml::Table) -> bool {
     nonempty("token") || nonempty("api_key")
 }
 
+/// A human label for who's logged in (email → user_key → as_user), if any.
+pub fn identity() -> Option<String> {
+    identity_from(&read_table())
+}
+
+fn identity_from(t: &toml::Table) -> Option<String> {
+    let s = |k: &str| {
+        t.get(k)
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+    };
+    s("email")
+        .or_else(|| s("user_key"))
+        .or_else(|| s("as_user"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,5 +60,14 @@ mod tests {
     #[test]
     fn empty_string_token_is_not_logged_in() {
         assert!(!logged_in_from(&"token = \"\"".parse().unwrap()));
+    }
+
+    #[test]
+    fn identity_prefers_email_then_user_key() {
+        let t = "user_key = \"david\"\nemail = \"d@x.com\"".parse().unwrap();
+        assert_eq!(identity_from(&t).as_deref(), Some("d@x.com"));
+        let t2 = "user_key = \"david\"".parse().unwrap();
+        assert_eq!(identity_from(&t2).as_deref(), Some("david"));
+        assert_eq!(identity_from(&toml::Table::new()), None);
     }
 }
