@@ -33,7 +33,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg", "updater"],
+    "targets": ["app", "dmg"],
     "category": "Productivity",
     "shortDescription": "Keeps your company brain in sync and queryable from local AI tools.",
     "createUpdaterArtifacts": true,
