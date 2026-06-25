@@ -4,8 +4,10 @@ import {
   getStatus,
   onLoginEvent,
   onSetupEvent,
+  recentActions,
   setPermission,
   startLogin,
+  uninstall,
   type LoginEvent,
   type Permissions,
   type Status,
@@ -16,12 +18,14 @@ function App() {
   const [status, setStatus] = useState<Status | null>(null);
   const [login, setLogin] = useState<LoginEvent | null>(null);
   const [setupStage, setSetupStage] = useState("");
+  const [actions, setActions] = useState<Record<string, unknown>[]>([]);
   const [appSlug, setAppSlug] = useState("");
   const [name, setName] = useState("");
 
   async function refresh() {
     try {
       setStatus(await getStatus());
+      setActions(await recentActions(8));
     } catch {
       setStatus(null);
     }
@@ -54,7 +58,23 @@ function App() {
     }
   }
 
-  const loggedIn = !!status; // TODO: surface real auth state from config
+  async function onUninstall() {
+    const purge = window.confirm(
+      "Remove Hyperspell? This stops syncing, removes the CLIs from your PATH, " +
+        "and reverses the agent-config changes.\n\nClick OK to also delete " +
+        "~/.hyperspell (config + synced data). Cancel to keep your data.",
+    );
+    // OK = purge everything; Cancel here means the user dismissed — bail.
+    // (A real build would use a 3-way dialog; window.confirm is binary.)
+    try {
+      await uninstall(purge);
+      refresh();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const loggedIn = status?.logged_in ?? false;
 
   return (
     <main className="app">
@@ -121,6 +141,27 @@ function App() {
           })}
         </ul>
       </section>
+
+      {actions.length > 0 && (
+        <section className="card">
+          <h2>Recent activity</h2>
+          <ul className="activity">
+            {actions
+              .slice()
+              .reverse()
+              .map((a, i) => (
+                <li key={i}>
+                  <b>{String(a.action ?? "?")}</b>
+                  {a.detail ? <small> — {String(a.detail)}</small> : null}
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
+
+      <button className="danger" onClick={onUninstall}>
+        Remove Hyperspell…
+      </button>
     </main>
   );
 }

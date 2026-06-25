@@ -141,3 +141,27 @@ button {
     transform: rotate(360deg);
   }
 }
+
+.activity {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+.activity li {
+  padding: 5px 0;
+  border-top: 1px solid #f2f2f2;
+  color: #444;
+}
+
+.activity small {
+  color: #999;
+}
+
+button.danger {
+  background: #fff;
+  color: #c0392b;
+  border: 1px solid #f0c8c2;
+}
+

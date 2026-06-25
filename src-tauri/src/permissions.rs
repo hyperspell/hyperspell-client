@@ -4,6 +4,7 @@
 //! writing granted integrations, stripping revoked ones. Default-deny: an unset
 //! key reads as `false`.
 
+use crate::config::read_table;
 use crate::daemon_paths::config_path;
 use serde::{Deserialize, Serialize};
 
@@ -23,13 +24,6 @@ pub struct Permissions {
     pub cursor: bool,
     pub claude_desktop: bool,
     pub visible_mirror: bool,
-}
-
-fn read_table() -> toml::Table {
-    std::fs::read_to_string(config_path())
-        .ok()
-        .and_then(|s| s.parse::<toml::Table>().ok())
-        .unwrap_or_default()
 }
 
 pub fn load() -> Permissions {

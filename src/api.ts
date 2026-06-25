@@ -11,6 +11,7 @@ export interface Permissions {
 }
 
 export interface Status {
+  logged_in: boolean;
   daemon_installed: boolean;
   daemon_running: boolean;
   permissions: Permissions;
@@ -65,6 +66,7 @@ export const recentActions = (limit?: number) =>
 export const startDaemon = () => invoke<void>("start_daemon");
 export const startLogin = (appSlug: string, name: string) =>
   invoke<void>("start_login", { appSlug, name });
+export const uninstall = (purge: boolean) => invoke<void>("uninstall", { purge });
 
 export interface LoginEvent {
   event: "pending" | "approved" | "error";

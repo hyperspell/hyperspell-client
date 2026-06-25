@@ -11,10 +11,12 @@
 mod actions_log;
 mod auth;
 mod bootstrap;
+mod config;
 mod daemon_paths;
 mod ipc;
 mod permissions;
 mod supervisor;
+mod uninstall;
 
 use supervisor::Supervisor;
 use tauri::menu::{Menu, MenuItem};
@@ -39,6 +41,7 @@ pub fn run() {
             ipc::recent_actions,
             ipc::start_login,
             ipc::start_daemon,
+            ipc::uninstall,
         ])
         .setup(|app| {
             // Menu-bar app: live in the tray, not the dock.
@@ -77,6 +80,16 @@ pub fn run() {
                     _ => {}
                 })
                 .build(app)?;
+
+            // If already authenticated, start syncing on launch (off the main
+            // thread — the bundled install can take a few seconds on first run).
+            if config::logged_in() {
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    let supervisor = handle.state::<Supervisor>();
+                    let _ = ipc::launch_daemon(&handle, &supervisor);
+                });
+            }
 
             Ok(())
         })
