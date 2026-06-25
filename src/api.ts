@@ -1,6 +1,11 @@
 // Typed wrappers over the Rust IPC commands (see src-tauri/src/ipc.rs).
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { openUrl } from "@tauri-apps/plugin-opener";
+
+// Open the device-login approval page in the system browser. `login --json` is
+// auth-only and deliberately does NOT open a browser — the app does.
+export const openLoginUrl = (url: string) => openUrl(url);
 
 export interface Permissions {
   claude_code: boolean;

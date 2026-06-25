@@ -165,3 +165,29 @@ button.danger {
   border: 1px solid #f0c8c2;
 }
 
+.banner {
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.banner--error {
+  background: #fdecea;
+  color: #b3271e;
+  border: 1px solid #f5c6c2;
+}
+
+button.link {
+  width: auto;
+  display: inline;
+  background: none;
+  border: none;
+  color: inherit;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: 6px;
+  font-size: inherit;
+  cursor: pointer;
+}
+
